@@ -42,3 +42,7 @@ if(SNAPPY_FOUND)
   build_snappy_example(snappy_server)
 endif()
 
+add_executable(simple_client simple_common.c simple_client.c)
+target_link_libraries(simple_client mercury)
+add_executable(simple_server simple_common.c simple_server.c)
+target_link_libraries(simple_server mercury)

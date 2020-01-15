@@ -8,6 +8,8 @@
  * found at the root of the source code distribution tree.
  */
 
+#define CCSAVA printf("cc %s:%u\n", __FILE__, __LINE__)
+
 #include <assert.h>
 #include <unistd.h>
 #include <aio.h>
@@ -19,7 +21,7 @@
 #include "example_rpc.h"
 
 /* example_rpc:
- * This is an example RPC operation.  It includes a small bulk transfer, 
+ * This is an example RPC operation.  It includes a small bulk transfer,
  * driven by the server, that moves data from the client to the server.  The
  * server writes the data to a local file.
  */
@@ -32,7 +34,7 @@
  */
 
 /* NOTES: this is all event-driven.  Data is written using an aio operation
- * with SIGEV_THREAD notification.  
+ * with SIGEV_THREAD notification.
  *
  * Note that the open and close are blocking for now because there is no
  * standard aio variant of those functions.
@@ -66,7 +68,7 @@ hg_id_t my_rpc_register(void)
 
     hg_class = hg_engine_get_class();
 
-    tmp = MERCURY_REGISTER(hg_class, "my_rpc", my_rpc_in_t, my_rpc_out_t, 
+    tmp = MERCURY_REGISTER(hg_class, "my_rpc", my_rpc_in_t, my_rpc_out_t,
         my_rpc_handler);
 
     return(tmp);
@@ -124,13 +126,13 @@ static hg_return_t my_rpc_handler_bulk_cb(const struct hg_cb_info *info)
     /* open file (NOTE: this is blocking for now, for simplicity ) */
     sprintf(filename, "/tmp/hg-stock-%d.txt", my_rpc_state_p->in.input_val);
     memset(&my_rpc_state_p->acb, 0, sizeof(my_rpc_state_p->acb));
-    my_rpc_state_p->acb.aio_fildes = 
+    my_rpc_state_p->acb.aio_fildes =
         open(filename, O_WRONLY|O_CREAT, S_IWUSR|S_IRUSR);
     assert(my_rpc_state_p->acb.aio_fildes > -1);
 
-    /* set up async I/O operation (write the bulk data that we just pulled 
+    /* set up async I/O operation (write the bulk data that we just pulled
      * from the client)
-     */ 
+     */
     my_rpc_state_p->acb.aio_offset = 0;
     my_rpc_state_p->acb.aio_buf = my_rpc_state_p->buffer;
     my_rpc_state_p->acb.aio_nbytes = 512;
@@ -154,6 +156,7 @@ static void my_rpc_handler_write_cb(union sigval sig)
     int ret;
     my_rpc_out_t out;
 
+    CCSAVA;
     ret = aio_error(&my_rpc_state_p->acb);
     assert(ret == 0);
     out.ret = 0;
@@ -161,6 +164,7 @@ static void my_rpc_handler_write_cb(union sigval sig)
     /* NOTE: really this should be nonblocking */
     close(my_rpc_state_p->acb.aio_fildes);
 
+    CCSAVA;
     /* send ack to client */
     /* NOTE: don't bother specifying a callback here for completion of sending
      * response.  This is just a best effort response.
@@ -168,12 +172,12 @@ static void my_rpc_handler_write_cb(union sigval sig)
     ret = HG_Respond(my_rpc_state_p->handle, NULL, NULL, &out);
     assert(ret == HG_SUCCESS);
     (void)ret;
-    
+
     HG_Bulk_free(my_rpc_state_p->bulk_handle);
     HG_Destroy(my_rpc_state_p->handle);
     free(my_rpc_state_p->buffer);
     free(my_rpc_state_p);
+    CCSAVA;
 
     return;
 }
-

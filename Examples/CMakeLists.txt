@@ -6,6 +6,7 @@ project(MercuryExamples C)
 #------------------------------------------------------------------------------
 set(MercuryExamples_CMAKE_DIR "${MercuryExamples_SOURCE_DIR}/CMake")
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${MercuryExamples_CMAKE_DIR})
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic")
 
 #------------------------------------------------------------------------------
 # Add src

@@ -8,6 +8,8 @@
  * found at the root of the source code distribution tree.
  */
 
+#define CCSAVA printf("cc %s:%u\n", __FILE__, __LINE__)
+
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
@@ -87,7 +89,7 @@ static void run_my_rpc(int value)
     /* address lookup.  This is an async operation as well so we continue in
      * a callback from here.
      */
-    hg_engine_addr_lookup("tcp://localhost:1234", lookup_cb, heap_value);
+    hg_engine_addr_lookup("tcp://127.0.0.1:1234", lookup_cb, heap_value);
 
     return;
 }
@@ -124,14 +126,16 @@ static hg_return_t lookup_cb(const struct hg_cb_info *callback_info)
     assert(ret == 0);
 
     /* Send rpc. Note that we are also transmitting the bulk handle in the
-     * input struct.  It was set above. 
-     */ 
+     * input struct.  It was set above.
+     */
     in.input_val = my_rpc_state_p->value;
     ret = HG_Forward(my_rpc_state_p->handle, my_rpc_cb, my_rpc_state_p, &in);
     assert(ret == 0);
     (void)ret;
+    CCSAVA;
 
-    return(NA_SUCCESS);
+
+    return(HG_SUCCESS);
 }
 
 /* callback triggered upon receipt of rpc response */
@@ -142,6 +146,7 @@ static hg_return_t my_rpc_cb(const struct hg_cb_info *info)
     struct my_rpc_state *my_rpc_state_p = info->arg;
 
     assert(info->ret == HG_SUCCESS);
+    CCSAVA;
 
     /* decode response */
     ret = HG_Get_output(info->info.forward.handle, &out);

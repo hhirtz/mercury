@@ -87,10 +87,10 @@ hg_class_t* hg_engine_get_class(void)
 
 void hg_engine_addr_lookup(const char* name, hg_cb_t cb, void *arg)
 {
-    na_return_t ret;
+    hg_return_t ret;
 
     ret = HG_Addr_lookup(hg_context, cb, arg, name, HG_OP_ID_IGNORE);
-    assert(ret == NA_SUCCESS);
+    assert(ret == HG_SUCCESS);
     (void)ret;
 
     return;
@@ -107,4 +107,3 @@ void hg_engine_create_handle(na_addr_t addr, hg_id_t id,
 
     return;
 }
-
